@@ -35,7 +35,9 @@
 " -----------------------------------------------------------------------------
 call plug#begin()
 
+Plug 'dense-analysis/ale'		" linter
 Plug 'Yggdroot/indentLine'
+Plug 'tpope/vim-fugitive'		" git (:Git)
 Plug 'scrooloose/nerdtree'
 Plug 'vim-scripts/taglist.vim'
 "Plug 'SirVer/ultisnips' 		" (installed using vim-addons)
@@ -46,6 +48,10 @@ Plug 'vim-voom/VOoM'			" outliner
 Plug 'VundleVim/Vundle.vim'
 
 call plug#end()
+
+" -----------------------------------------------------------------------------
+" > common plugin settings 
+" -----------------------------------------------------------------------------
 
 filetype plugin indent on
 syntax enable
@@ -226,6 +232,9 @@ autocmd FileType python setlocal expandtab shiftwidth=4 softtabstop=4
 " :PDBReset 	x 	Switch back to normal debugging in shell (standard pdb)
 "  N/A 	        v(im) 	Switch back to vimpdb; only in plain pdb.
 
+" no built-in python syntax folding.
+autocmd FileType python set foldmethod=indent
+autocmd FileType python set foldnestmax=2
 
 
 " -----------------------------------------------------------------------------
@@ -236,10 +245,18 @@ autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
 
 
 " -----------------------------------------------------------------------------
-" > markdown 
+" > markdown
 " -----------------------------------------------------------------------------
 
-nnoremap <buffer> <F3> :VoomToggle markdown<CR> " TODO: autocmd Filetype md
+" Force markdown for .md files thus ignore module 2.
+autocmd BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
+
+autocmd FileType markdown nnoremap <buffer> <F3> :VoomToggle markdown<CR>
+autocmd FileType markdown let g:markdown_folding = 1
+autocmd FileType markdown set foldlevel=1
+autocmd FileType markdown set foldclose=all
+autocmd FileType markdown set foldopen=all
+"autocmd FileType markdown set foldmethod=syntax
 
 " -----------------------------------------------------------------------------
 " > html
@@ -268,6 +285,7 @@ let g:vim_json_conceal=0 " disable quote concealing
 " -----------------------------------------------------------------------------
 
 autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
+autocmd FileType xml let xml_syntax_folding=1
 
 
 " -----------------------------------------------------------------------------

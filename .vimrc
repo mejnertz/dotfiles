@@ -10,13 +10,17 @@
 " TODO: check plugins https://github.com/gerardbm/vimrc?tab=readme-ov-file
 "
 " -----------------------------------------------------------------------------
-" Prerequisites  
+" Prerequisites
 " -----------------------------------------------------------------------------
 "
 " apt-get install vim vim-gtk3 \
 " 	exuberant-ctags \
 " 	vim-addon-manager \
-" 	vim-youcompleteme
+" 	vim-youcompleteme \
+" 	ansible \
+" 	ansible-lint \
+" 	yamllint \
+" 	yarnpkg
 "
 " vim-addon-manager install youcompleteme
 "
@@ -35,26 +39,36 @@
 " -----------------------------------------------------------------------------
 call plug#begin()
 
-Plug 'dense-analysis/ale'		" linter
-Plug 'Yggdroot/indentLine'
-Plug 'tpope/vim-fugitive'		" git (:Git)
-Plug 'scrooloose/nerdtree'
-Plug 'vim-scripts/taglist.vim'
-"Plug 'SirVer/ultisnips' 		" (installed using vim-addons)
-Plug 'honza/vim-snippets'
-Plug 'altercation/vim-colors-solarized'
-Plug 'bronson/vim-trailing-whitespace'	" show trailing whitespace
-Plug 'vim-voom/VOoM'			" outliner
-Plug 'VundleVim/Vundle.vim'
+Plug 'dense-analysis/ale'		" ale (linter)
+Plug 'pearofducks/ansible-vim'		" ansible-vim
+Plug 'yaegassy/coc-ansible', {'do': 'yarnpkg install --frozen-lockfile'} " coc-ansible
+Plug 'Yggdroot/indentLine'		" indentLine
+Plug 'scrooloose/nerdtree'		" nerdtree
+Plug 'vim-scripts/taglist.vim'		" taglist
+Plug 'godlygeek/tabular'		" tabular (:Tabularize)
+"Plug 'SirVer/ultisnips' 		" ultisnips (installed using vim-addons)
+Plug 'honza/vim-snippets'		" vim-snippets
+Plug 'altercation/vim-colors-solarized'	" vim-colors-solarized
+Plug 'tpope/vim-fugitive'		" vim-fugitive (:Git)
+"Plug 'preservim/vim-markdown'		" vim-markdown (depend on tabular)
+Plug 'bronson/vim-trailing-whitespace'	" vim-trailing-whitespace
+Plug 'vim-voom/VOoM'			" VOom (outliner)
+"Plug 'VundleVim/Vundle.vim'		" Vundle
 
 call plug#end()
 
 " -----------------------------------------------------------------------------
-" > common plugin settings 
+" > common plugin settings
 " -----------------------------------------------------------------------------
 
 filetype plugin indent on
 syntax enable
+
+
+" -----------------------------------------------------------------------------
+" > ale
+" -----------------------------------------------------------------------------
+let g:ale_virtualtext_cursor = 1
 
 " -----------------------------------------------------------------------------
 " > cscope
@@ -117,16 +131,23 @@ au BufEnter /* call LoadCscope()
 " <Leader>ihn   as :IHN	
 
 "" buffers
-" :wn[ext] 
+" :wn[ext]
 " :next
 " :first
 "
 
+" -----------------------------------------------------------------------------
+" > indentLine
+" -----------------------------------------------------------------------------
+
+let g:indentLine_char = '┆'
+let g:indentLine_fileType = ['yaml']
+
 
 " -----------------------------------------------------------------------------
-" > nerdtree 
+" > nerdtree
 " -----------------------------------------------------------------------------
-"
+
 let g:nerdtree_tabs_open_on_console_startup=0
 let g:NERDTreeWinSize=60
 
@@ -148,7 +169,7 @@ let g:NERDTreeWinSize=60
 let g:UltiSnipsExpandTrigger 		= "<tab>"
 let g:UltiSnipsJumpForwardTrigger 	= "<tab>"
 let g:UltiSnipsJumpBackwardTrigger 	= "<s-tab>"
-let g:UltiSnipsListSnippets             = "<C-k>" 
+let g:UltiSnipsListSnippets             = "<C-k>"
 
 
 " -----------------------------------------------------------------------------
@@ -172,6 +193,17 @@ let g:SuperTabDefaultCompletionType = '<C-n>'
 " -----------------------------------------------------------------------------
 " Work settings
 " -----------------------------------------------------------------------------
+
+" -----------------------------------------------------------------------------
+" > Ansible
+" -----------------------------------------------------------------------------
+"
+autocmd BufRead,BufNewFile */playbooks/*.yml set filetype=yaml.ansible
+autocmd BufRead,BufNewFile */tasks/*.yml set filetype=yaml.ansible
+
+let g:coc_filetype_map = {
+  \ 'yaml.ansible': 'ansible',
+  \ }
 
 " -----------------------------------------------------------------------------
 " > C programming
@@ -249,13 +281,13 @@ autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
 " -----------------------------------------------------------------------------
 
 " Force markdown for .md files thus ignore module 2.
-autocmd BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
+"autocmd BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
 
 autocmd FileType markdown nnoremap <buffer> <F3> :VoomToggle markdown<CR>
-autocmd FileType markdown let g:markdown_folding = 1
-autocmd FileType markdown set foldlevel=1
-autocmd FileType markdown set foldclose=all
-autocmd FileType markdown set foldopen=all
+"autocmd FileType markdown let g:markdown_folding = 1
+"autocmd FileType markdown set foldlevel=1
+"autocmd FileType markdown set foldopen=all
+"autocmd FileType markdown set foldclose=all
 "autocmd FileType markdown set foldmethod=syntax
 
 " -----------------------------------------------------------------------------
@@ -276,8 +308,7 @@ autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
 " -----------------------------------------------------------------------------
 
 autocmd FileType json setlocal ts=2 sw=2 expandtab
-
-let g:vim_json_conceal=0 " disable quote concealing
+autocmd FileType json let g:vim_json_conceal=0 " disable quote concealing
 
 
 " -----------------------------------------------------------------------------
@@ -305,7 +336,6 @@ autocmd FileType go set colorcolumn=80
 autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
 autocmd FileType yaml set foldmethod=indent
 autocmd FileType yaml set nofoldenable
-autocmd FileType yaml let g:indentLine_char = '⦙'
 
 
 
@@ -335,16 +365,30 @@ let g:voom_ft_modes = {
 
 
 " -----------------------------------------------------------------------------
-" > vimdiff 
+" > vimdiff
 " -----------------------------------------------------------------------------
 
 if &diff
 	colorscheme desert
 endif
 
+" -----------------------------------------------------------------------------
+" Vim scripts
+" -----------------------------------------------------------------------------
+
+" TODO: debug
+function! FoldCloseToggle()
+    if &fcl != "all"
+        set foldclose = "all"
+        echo "fcl all"
+    else
+        set foldclose = ""
+        echo "fcl never"
+    endif
+endfunction
 
 " -----------------------------------------------------------------------------
-" Vim settings 
+" Vim settings
 " -----------------------------------------------------------------------------
 
 " General display
@@ -358,7 +402,7 @@ set autoindent
 " > bell
 " -----------------------------------------------------------------------------
 
-set visualbell
+set visualbell			" blink instead of bell
 set t_vb=
 
 
@@ -386,7 +430,7 @@ endif
 
 
 " -----------------------------------------------------------------------------
-" > keybindings 
+" > keybindings
 " -----------------------------------------------------------------------------
 map <F1> :NERDTreeToggle<cr>
 map <F2> :TlistToggle<cr>
@@ -397,6 +441,8 @@ map <F2> :TlistToggle<cr>
 " F5 used by pep8
 "let g:UltiSnipsExpandTrigger            ="<F6>"
 ":nnoremap <silent> <F7> :let _s=@/ <Bar> :%s/\s\+$//e <Bar> :let @/=_s <Bar> :nohl <Bar> :unlet _s <CR>
+
+nnoremap <F9> :call FoldCloseToggle()<CR>
 
 
 
